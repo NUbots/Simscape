@@ -1,2 +1,6 @@
 # All Simscape solution compilation files
 *.slxc
+*.autosave
+
+# Any solution project generated files
+**/slprj
