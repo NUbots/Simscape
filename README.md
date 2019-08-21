@@ -7,7 +7,7 @@ Physics simulation using Simulink's [Simscape Multibody](https://www.mathworks.c
 
 
 ## Requirements
-1. [MATLAB](https://mathworks.com/products/matlab.html) (tested with R2018A v9.1)
+1. [MATLAB](https://mathworks.com/products/matlab.html) (tested with r2018A and r2019A)
 2. [Simulink](https://mathworks.com/products/simulink.html)
 3. [Simscape](https://mathworks.com/products/simscape.html) 
 4. [Simscape Multibody](https://mathworks.com/products/simmechanics.html)
