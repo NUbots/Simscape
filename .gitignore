@@ -1,6 +1,13 @@
 # All Simscape solution compilation files
-*.slxc
-*.autosave
+**.slxc
+**.autosave
 
 # Any solution project generated files
 **/slprj
+
+# Any diagnostic output files
+**.htmx
+**.mexw64
+
+# Any version-specified solutions
+**r[0-9][0-9][0-9][0-9][a|b]
