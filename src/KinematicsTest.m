@@ -5,8 +5,9 @@ model = NUgusKinematics();
 %% Create kinematics object
 k = Kinematics(model);
 npts = 150;
-periods = 4*pi;
-x = linspace(0, periods, npts+periods*10);
+periods = 16*pi;
+legOffset = round((0.25 * npts) / ((periods) / (2*pi)));
+x = linspace(0, periods, npts+legOffset);
 traj = sin(x) .^ 2;
 figure(1)
 plot(traj)
@@ -15,14 +16,14 @@ t = Transform3D();
 % for time=1:npts/2
 for time=1:npts-1
 %     legOffset = round(periods * 10);
-    legOffset = round((npts / periods) / 2*pi);
     
-    rTRh = [0.05 + 0.05*traj(time+legOffset) -0.1-0.01*traj(time+legOffset) -0.1+0.1*traj(time+legOffset)];
-    rTLh = [0.05 + 0.05*traj(time) 0.1+0.2*traj(time) -0.1+0.01*traj(time+legOffset)];
     
-    HTRl = t.translate([-0.05 + 0.1*traj(time) -0.03-0.05*traj(time) -0.45 + 0.1*traj(time)]);
-    HTLl = t.translate([-0.05 + 0.1*traj(time+legOffset) 0.03+0.05*traj(time+legOffset) -0.45 + 0.1*traj(time+legOffset)]);
-    rCP  = [1.0 0.0 0.0];
+    rTRh = [0.05 + 0.05*traj(time+legOffset) -0.1 -0.1+0.1*traj(time+legOffset)];
+    rTLh = [0.05 + 0.05*traj(time) 0.1 -0.1+0.01*traj(time+legOffset)];
+    
+    HTRl = t.translate([-0.1 + 0.1*traj(time) -0.03-0.05*traj(time) -0.45 + 0.1*traj(time)]);
+    HTLl = t.translate([-0.1 + 0.1*traj(time+legOffset) 0.03+0.05*traj(time+legOffset) -0.45 + 0.1*traj(time+legOffset)]);
+    rCP  = [1.0 0.5*traj(time) 0.0];
 
     [thetaTRSp, thetaTLSp, thetaTRSr, thetaTLSr, thetaTRE, thetaTLE, thetaTRHy, thetaTLHy, thetaTRHr, thetaTLHr, thetaTRHp, thetaTLHp, thetaTRK, thetaTLK, thetaTRAp, thetaTLAp, thetaTRAr, thetaTLAr, thetaTNy, thetaTNp] = k.getIK(rTRh, rTLh, HTRl, HTLl, rCP);
     %% For a zombie pose, calculate FK
@@ -60,7 +61,8 @@ for time=1:npts-1
     ylabel('y (m)')
     zlabel('z (m)')
     title('NUgus IK/FK')
-    view([0.5 0.48 0.1])
+%     view([time/npts 0.5 0.1])
+    view([0.48 0.5 0.1])
     hold off
     
     pause(0.1)
