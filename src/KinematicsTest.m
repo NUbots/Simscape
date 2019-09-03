@@ -1,11 +1,10 @@
-clear all
 clf
 %% NUgus Kinematics Model
 model = NUgusKinematics();
 %% Create kinematics object
 k = Kinematics(model);
-npts = 150;
-periods = 16*pi;
+npts = 50;
+periods = 4*pi;
 legOffset = round((0.25 * npts) / ((periods) / (2*pi)));
 x = linspace(0, periods, npts+legOffset);
 traj = sin(x) .^ 2;
@@ -65,5 +64,6 @@ for time=1:npts-1
     view([0.48 0.5 0.1])
     hold off
     
+    % saveas(gcf,sprintf('f%d.png', time))
     pause(0.1)
 end
