@@ -172,7 +172,7 @@ classdef Kinematics
             sqrLowerArm = this.model.arm.lower_arm.LENGTH ^ 2;
             sqrExtenArm = extLength ^ 2;
             cosElbow = (sqrUpperArm + sqrLowerArm - sqrExtenArm) / (2 * this.model.arm.upper_arm.LENGTH * this.model.arm.lower_arm.LENGTH);
-            thetaTE = -pi + acos(max(min(cosElbow, 1), -1));
+            thetaTE = -(-pi + acos(max(min(cosElbow, 1), -1)));
             % Shoulder Pitch
             cosPitAngle = (sqrUpperArm + sqrExtenArm - sqrLowerArm) / (2 * this.model.arm.upper_arm.LENGTH * extLength);
             thetaTSp = acos(max(min(cosPitAngle, 1), -1)) + atan2(-rSt(3), rSt(1));
@@ -182,7 +182,7 @@ classdef Kinematics
             Rp = Rp.rotateY(-thetaTSp);
             % Vector from hand (target) to shoulder without pitch
             rStp = Rp.tf * [rSt 1.0].';
-            thetaTSr = atan2(rStp(2), rStp(1));
+            thetaTSr = mirrorY*atan2(rStp(2), rStp(1));
         end
         %% IK: Hip yaw, hip roll, hip pitch, knee, ankle pitch, ankle roll servos
         function [thetaTHy, thetaTHr, thetaTHp, thetaTK, thetaTAp, thetaTAr] = legIK(this, Htf, isLeft)
