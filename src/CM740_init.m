@@ -51,8 +51,8 @@ clear i
 
 % Set IMU parameters according to Robotis documentation
 % (http://emanual.robotis.com/docs/en/platform/op2/getting_started/#sub-controllercm-740)
-CM740_acc_centre  = 4 * 9.80743;             % acceleration output centre
+CM740_acc_bias    = 4 * 9.80743;             % acceleration bias value (from MRL)
 CM740_acc_gain    = 512 / CM740_acc_centre;  % m/s^2
-CM740_gyro_centre = 1600 / 360 * 2 * pi;     % gyro output centre
+CM740_gyro_bias   = 1600 / 360 * 2 * pi;     % gyro bias value (from MRL)
 CM740_gyro_gain   = 512 / CM740_gyro_centre; % rad/s
 CM740_sample_time = 1 / 90;
