@@ -9,3 +9,5 @@ floor.friction = 0.6;   % Friction coeff.
 % Initialise servos
 MX64_init;
 MX106_init;
+% Initialise CM740
+CM740_init;
