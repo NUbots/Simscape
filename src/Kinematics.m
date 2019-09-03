@@ -226,7 +226,7 @@ classdef Kinematics
             cosLowerLeg = (sqrLowerLeg + sqrLength - sqrUpperLeg) / (2 * this.model.leg.LOWER_LEG_LENGTH * legLength);
             lowerLeg = acos(max(min(cosLowerLeg, 1), -1));
             
-            phi2 = acos(dot(targetLeg, ankleY) / legLength);
+            phi2 = acos(max(min(dot(targetLeg, ankleY) / legLength, 1), -1));
             thetaTAp = lowerLeg + phi2 - pi/2;
             
             unitTargetLeg = targetLeg / legLength;
@@ -255,7 +255,7 @@ classdef Kinematics
             legPlaneGlobalZLength = norm(legPlaneGlobalZ, 2);
             legPlaneGlobalZ = this.unary(legPlaneGlobalZLength > 0, legPlaneGlobalZ / legPlaneGlobalZLength, legPlaneGlobalZ);
             
-            thetaTHr = acos(dot(legPlaneGlobalZ, rz));
+            thetaTHr = acos(max(min(dot(legPlaneGlobalZ, rz), 1), -1));
             thetaTHr = this.unary(cosZandHipX <= 0, thetaTHr, -thetaTHr);
 
             % Calculate hip pitch
@@ -264,7 +264,7 @@ classdef Kinematics
             thetapiphi2 = sin(pi - phi2);
             unitUpperLeg = unitTargetLeg * (sin(phi2 - phi4) / thetapiphi2) + ankleY * (sin(phi4) / thetapiphi2);
             
-            thetaTHp = acos(dot(legPlaneGlobalZ, unitUpperLeg));
+            thetaTHp = acos(max(min(dot(legPlaneGlobalZ, unitUpperLeg), 1), -1));
             thetaTHp = this.unary(dot(hipX, cross(unitUpperLeg, legPlaneGlobalZ)) >= 0, thetaTHp, -thetaTHp);
             
             % Calculate hip yaw
