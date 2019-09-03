@@ -5,6 +5,7 @@
 
 # Any solution project generated files
 **/slprj
+*.original
 
 # Any diagnostic output files
 *.htmx
