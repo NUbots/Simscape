@@ -7,8 +7,8 @@ classdef Kinematics
         function obj = Kinematics(m)
            obj.model = m; 
         end
-        %% Helper function for unary operations
-        function result = unary(~, c, t, f)
+        %% Helper function for ternary operations
+        function result = ternary(~, c, t, f)
             if (c)
                 result = t;
             else
@@ -76,7 +76,7 @@ classdef Kinematics
             shoulderRoll = p(3+isLeft);
             elbow = p(5+isLeft);
             % Mirror about y if right leg
-            mirrorY = this.unary(isLeft, 1.0, -1.0);
+            mirrorY = this.ternary(isLeft, 1.0, -1.0);
             % Traverse to shoulder pitch
             t = Transform3D();
             t = t.translate([this.model.arm.shoulder.OFFSET(1) this.model.arm.DISTANCE_BETWEEN_SHOULDERS*mirrorY/2 this.model.arm.shoulder.OFFSET(2)])...
@@ -106,7 +106,7 @@ classdef Kinematics
             anklePitch  = p(15+isLeft);
             ankleRoll   = p(17+isLeft);
             % Mirror about y if right leg
-            mirrorY = this.unary(isLeft, 1.0, -1.0);
+            mirrorY = this.ternary(isLeft, 1.0, -1.0);
             %Traverse to hip yaw
             t = Transform3D(); 
             t = t.translate(this.model.leg.HIP_OFFSET .* [1 mirrorY -1])...
@@ -161,7 +161,7 @@ classdef Kinematics
         %% IK: Shoulder pitch, shoulder roll, elbow servos
         function [thetaTSp, thetaTSr, thetaTE] = armIK(this, rTt, isLeft)
             % Mirror about y if right leg
-            mirrorY = this.unary(isLeft, 1.0, -1.0);
+            mirrorY = this.ternary(isLeft, 1.0, -1.0);
             % Vector from shoulder to torso
             rTS = [this.model.arm.shoulder.OFFSET(1) mirrorY*this.model.arm.DISTANCE_BETWEEN_SHOULDERS/2 this.model.arm.shoulder.OFFSET(2)];
             % Vector from hand (target) to shoulder
@@ -212,7 +212,7 @@ classdef Kinematics
             legLength = norm(targetLeg);
             maxLegLength = this.model.leg.UPPER_LEG_LENGTH + this.model.leg.LOWER_LEG_LENGTH;
             % Check if leg has passed maximum length
-            targetLeg = this.unary(legLength > maxLegLength, targetLeg * maxLegLength / legLength, targetLeg);
+            targetLeg = this.ternary(legLength > maxLegLength, targetLeg * maxLegLength / legLength, targetLeg);
 
             legLength = norm(targetLeg);
             % Alias squared values for convenience
@@ -233,7 +233,7 @@ classdef Kinematics
             
             hipX = cross(ankleY, unitTargetLeg);
             hipXLength = norm(hipX, 2);
-            hipX = this.unary(hipXLength > 0, hipX / hipXLength, hipX);
+            hipX = this.ternary(hipXLength > 0, hipX / hipXLength, hipX);
             if hipXLength <= 0
                 disp('[ERR] TargetLeg and ankleY parallel.')
             end
@@ -250,13 +250,13 @@ classdef Kinematics
             
             % If ankle is above waist, swap z component            
             legPlaneGlobalZ = rz - (cosZandHipX * hipX);
-            legPlaneGlobalZ = this.unary(dot(unitTargetLeg, rz) < 0, -legPlaneGlobalZ, legPlaneGlobalZ);
+            legPlaneGlobalZ = this.ternary(dot(unitTargetLeg, rz) < 0, -legPlaneGlobalZ, legPlaneGlobalZ);
             
             legPlaneGlobalZLength = norm(legPlaneGlobalZ, 2);
-            legPlaneGlobalZ = this.unary(legPlaneGlobalZLength > 0, legPlaneGlobalZ / legPlaneGlobalZLength, legPlaneGlobalZ);
+            legPlaneGlobalZ = this.ternary(legPlaneGlobalZLength > 0, legPlaneGlobalZ / legPlaneGlobalZLength, legPlaneGlobalZ);
             
             thetaTHr = acos(max(min(dot(legPlaneGlobalZ, rz), 1), -1));
-            thetaTHr = this.unary(cosZandHipX <= 0, thetaTHr, -thetaTHr);
+            thetaTHr = this.ternary(cosZandHipX <= 0, thetaTHr, -thetaTHr);
 
             % Calculate hip pitch
             phi4 = pi - thetaTK - lowerLeg;
@@ -265,15 +265,15 @@ classdef Kinematics
             unitUpperLeg = unitTargetLeg * (sin(phi2 - phi4) / thetapiphi2) + ankleY * (sin(phi4) / thetapiphi2);
             
             thetaTHp = acos(max(min(dot(legPlaneGlobalZ, unitUpperLeg), 1), -1));
-            thetaTHp = this.unary(dot(hipX, cross(unitUpperLeg, legPlaneGlobalZ)) >= 0, thetaTHp, -thetaTHp);
+            thetaTHp = this.ternary(dot(hipX, cross(unitUpperLeg, legPlaneGlobalZ)) >= 0, thetaTHp, -thetaTHp);
             
             % Calculate hip yaw
-            hipXProjected = this.unary(dot(unitTargetLeg, rz) < 0, -hipX, hipX);
+            hipXProjected = this.ternary(dot(unitTargetLeg, rz) < 0, -hipX, hipX);
             hipXProjected(3) = 0;
             hipXProjected = hipXProjected / norm(hipXProjected, 2);
             
             thetaTHy = acos(dot(hipXProjected, rx));
-            thetaTHy = this.unary(dot(hipXProjected, ry) >= 0, thetaTHy, -thetaTHy);            
+            thetaTHy = this.ternary(dot(hipXProjected, ry) >= 0, thetaTHy, -thetaTHy);            
 
             % Correct for angle directions
             thetaTHy = -thetaTHy;
