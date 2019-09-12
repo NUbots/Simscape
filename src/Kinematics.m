@@ -92,7 +92,7 @@ classdef Kinematics
             HtSr = t;
             % Traverse to elbow
             t = t.rotateY(elbow)...
-                .translate([this.model.arm.lower_arm.LENGTH mirrorY*this.model.arm.lower_arm.OFFSET(1) -this.model.arm.lower_arm.OFFSET(2)]);
+                .translate([-this.model.arm.lower_arm.LENGTH this.model.arm.lower_arm.OFFSET(1) -this.model.arm.lower_arm.OFFSET(2)]);
             % Store elbow
             HtE = t;
         end
