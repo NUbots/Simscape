@@ -71,17 +71,16 @@ classdef Kinematics
         end
         %% FK: Shoulder pitch, roll and elbow servos
         function [HtSp, HtSr, HtE] = armFK(this, p, isLeft)
-            % Alias servo positions for convenience
+            % Mirror about y if right leg
+            mirrorY = this.ternary(isLeft, 1.0, -1.0);
             shoulderPitch = p(1+isLeft);
             shoulderRoll = p(3+isLeft);
             elbow = p(5+isLeft);
-            % Mirror about y if right leg
-            mirrorY = this.ternary(isLeft, 1.0, -1.0);
             % Traverse to shoulder pitch
             t = Transform3D();
-            t = t.translate([this.model.arm.shoulder.OFFSET(1) this.model.arm.DISTANCE_BETWEEN_SHOULDERS*mirrorY/2 this.model.arm.shoulder.OFFSET(2)])...
+            t = t.translate([this.model.arm.shoulder.OFFSET(1), mirrorY*this.model.arm.DISTANCE_BETWEEN_SHOULDERS/2, this.model.arm.shoulder.OFFSET(2)])...
                 .rotateY(shoulderPitch - pi/2)...
-                .translate(this.model.arm.shoulder.DIMS .* [1 mirrorY -1]);
+                .translate([this.model.arm.shoulder.DIMS(1) mirrorY*this.model.arm.shoulder.DIMS(2) -this.model.arm.shoulder.DIMS(3)]);
             % Store shoulder pitch
             HtSp = t;
             % Traverse to shoulder roll
@@ -92,7 +91,7 @@ classdef Kinematics
             HtSr = t;
             % Traverse to elbow
             t = t.rotateY(elbow)...
-                .translate([-this.model.arm.lower_arm.LENGTH this.model.arm.lower_arm.OFFSET(1) -this.model.arm.lower_arm.OFFSET(2)]);
+                .translate([this.model.arm.lower_arm.LENGTH mirrorY*this.model.arm.lower_arm.OFFSET(1) -this.model.arm.lower_arm.OFFSET(2)]);
             % Store elbow
             HtE = t;
         end
@@ -149,9 +148,6 @@ classdef Kinematics
             % Leg IK
             [thetaTRHy, thetaTRHr, thetaTRHp, thetaTRK, thetaTRAp, thetaTRAr] = this.legIK(HTRl.tf, false);
             [thetaTLHy, thetaTLHr, thetaTLHp, thetaTLK, thetaTLAp, thetaTLAr] = this.legIK(HTLl.tf, true);
-            % Pack theta values
-%             p = [thetaTRSp, thetaTLSp, thetaTRSr, thetaTLSr, thetaTRE, thetaTLE, thetaTRHy, thetaTLHy, thetaTRHr, thetaTLHr, thetaTRHp, thetaTLHp, thetaTRK, thetaTLK, thetaTRAp, thetaTLAp, thetaTRAr, thetaTLAr, thetaTNy, thetaTNp].';
-            %p
         end
         %% IK: Head yaw, head pitch
         function [thetaTNy, thetaTNp] = headIK(this, rTt)
@@ -172,7 +168,7 @@ classdef Kinematics
             sqrLowerArm = this.model.arm.lower_arm.LENGTH ^ 2;
             sqrExtenArm = extLength ^ 2;
             cosElbow = (sqrUpperArm + sqrLowerArm - sqrExtenArm) / (2 * this.model.arm.upper_arm.LENGTH * this.model.arm.lower_arm.LENGTH);
-            thetaTE = -(-pi + acos(max(min(cosElbow, 1), -1)));
+            thetaTE = -pi + acos(max(min(cosElbow, 1), -1));
             % Shoulder Pitch
             cosPitAngle = (sqrUpperArm + sqrExtenArm - sqrLowerArm) / (2 * this.model.arm.upper_arm.LENGTH * extLength);
             thetaTSp = acos(max(min(cosPitAngle, 1), -1)) + atan2(-rSt(3), rSt(1));
@@ -181,8 +177,8 @@ classdef Kinematics
             Rp = Transform3D();
             Rp = Rp.rotateY(-thetaTSp);
             % Vector from hand (target) to shoulder without pitch
-            rStp = Rp.tf * [rSt 1.0].';
-            thetaTSr = mirrorY*atan2(rStp(2), rStp(1));
+            rStp = Rp.tf * [rSt 1.0]';
+            thetaTSr = atan2(rStp(2), rStp(1));
         end
         %% IK: Hip yaw, hip roll, hip pitch, knee, ankle pitch, ankle roll servos
         function [thetaTHy, thetaTHr, thetaTHp, thetaTK, thetaTAp, thetaTAr] = legIK(this, Htf, isLeft)

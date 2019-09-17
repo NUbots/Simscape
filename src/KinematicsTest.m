@@ -1,4 +1,4 @@
-clf
+clf;
 %% NUgus Kinematics Model
 model = NUgusKinematics();
 %% Create kinematics object
@@ -14,11 +14,8 @@ plot(traj)
 t = Transform3D();
 % for time=1:npts/2
 for time=1:npts-1
-%     legOffset = round(periods * 10);
-    
-    
-    rTRh = [0.05 + 0.05*traj(time+legOffset) -0.1 -0.1+0.1*traj(time+legOffset)];
-    rTLh = [0.05 + 0.05*traj(time) 0.1 -0.1+0.01*traj(time+legOffset)];
+    rTRh = [0.0 -0.1 0];
+    rTLh = [0.0 0.1 0];
     
     HTRl = t.translate([-0.1 + 0.1*traj(time) -0.03-0.05*traj(time) -0.45 + 0.1*traj(time)]);
     HTLl = t.translate([-0.1 + 0.1*traj(time+legOffset) 0.03+0.05*traj(time+legOffset) -0.45 + 0.1*traj(time+legOffset)]);
@@ -61,7 +58,7 @@ for time=1:npts-1
     zlabel('z (m)')
     title('NUgus IK/FK')
 %     view([time/npts 0.5 0.1])
-    view([0.48 0.5 0.1])
+    view([0 0.5 0])
     hold off
     
     % saveas(gcf,sprintf('f%d.png', time))
