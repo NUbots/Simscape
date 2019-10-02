@@ -23,8 +23,11 @@ floor.stud_radius = 0.005;
 torso.height = 0.45;
 
 %% Step parameters
-step.height = 0.1; % m (z)
-step.length = 0.2; % m (forward)
+z0          = 0.45; % m (z)
+step_height = 0.1;  % m (z)
+period      = 1.0;  % s
+step.length = 0.2;  % m (forward)
+Kw          = 0.9;  % Proportional gain for ZMP reference tracking
 
 %% Initialise kinematics parameters
 model = NUgusKinematics;
