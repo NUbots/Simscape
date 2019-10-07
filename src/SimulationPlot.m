@@ -1,4 +1,5 @@
 clf;
+close all;
 
 % clear Htg x y z
 % 
@@ -31,7 +32,7 @@ clf;
 
 % Htw.data(:,:,end)
 % return
-
+figure()
 for ii=1:size(Htw.data, 3)
     %% Get centre of mass in world space
     H = Htw.data(:,:,ii);
@@ -50,7 +51,6 @@ for ii=1:size(Htw.data, 3)
     com_ii = Hwc(1:3, 4);
     
     %% Plot
-    figure(1)
     grid()
     % Scatter joints
     n = 4:4:4*20;
