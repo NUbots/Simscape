@@ -6,11 +6,15 @@ classdef Transform3D
     methods
         %% Constructor
         function t = Transform3D(x, y, z, roll, pitch, yaw)
-            % Start transform as identity
-            t.tf = eye(4);
-            % If we have enough arguments, translate and rotate as needed
-            if nargin >= 6
-               t = t.translate([x y z]).rotateZ(yaw).rotateY(pitch).rotateX(roll);
+            if nargin == 1
+                t.tf = x;    
+            else
+                % Start transform as identity
+                t.tf = eye(4);
+                % If we have enough arguments, translate and rotate as needed
+                if nargin >=6
+                    t = t.translate([x y z]).rotateZ(yaw).rotateY(pitch).rotateX(roll);
+                end
             end
         end
         %% Translation
