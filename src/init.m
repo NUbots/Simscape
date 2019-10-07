@@ -28,6 +28,8 @@ step_height = 0.1;  % m (z)
 period      = 1.0;  % s
 step.length = 0.2;  % m (forward)
 Kw          = 0.9;  % Proportional gain for ZMP reference tracking
+Kh          = 90;  % Proportional gain for hip control
+Ka          = 0.1; % Proportional gain for ankle control
 
 %% Initialise kinematics parameters
 model = NUgusKinematics;
