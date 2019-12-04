@@ -5,8 +5,8 @@ MX106_default = struct( ...
     'D_gain',uint8(0), ...
     'I_gain',uint8(0), ...
     'P_gain',uint8(32), ...
-    'goal_position',int16(2048), ...
-    'moving_speed',int16(0), ...
+    'goal_position',int16(0), ...
+    'moving_speed',int16(1023), ...
     'torque_limit',int16(1023), ...
     'present_position',int16(0), ...
     'present_speed',int16(0), ...
@@ -91,21 +91,21 @@ clear i
 % Set motor parameters according to Robotis documentation
 % (http://emanual.robotis.com/docs/en/dxl/mx/mx-106/)
 MX106_reduction = 255;                                %
-MX106_max_speed = 55 * MX106_reduction / 60 * 2 * pi; % rad/s
+MX106_max_speed = 55 * MX106_reduction / 60 * 2 * pi; % rad/s (128) % 55 (123)
 MX106_stall_torque = 10.0 / MX106_reduction;          % Nm
 MX106_stall_current = 6.3;                            % A
 MX106_supply_voltage = 14.8;                          % V
 MX106_position_gain = 4096 / 2 / pi;                  % rad (norm from 0 ... 4095)
 MX106_speed_gain = 1024 / 8;                          % position difference (norm from -1023 ... 1023)
-MX106_resistor = 500;                                 % Ohm
-MX106_inductor = 6.37e-3;                             % H
+MX106_resistor = 25;                                 % Ohm
+MX106_inductor = 6.37e-6;                             % H
 MX106_Kv = 9.926e-3;                                  % Vrad/s
 MX106_Kc = 8e-1;                                      % Nm/A [from measurements by T. Baroche
 MX106_inertia = 9e-8 * MX106_reduction^2;             % kgm² from measurements
 MX106_amplifier = MX106_supply_voltage/1024;          %
 MX106_Te = 1/1000;                                    %
 % MX106_Kp = 1/4;                                     %
-MX106_Kp = 1;                                         % [Originally 1/4]  
+MX106_Kp = 1/2;                                         % [Originally 1/4]  
 MX106_Ki = 1/1024;                                    %
 MX106_Kd = 1/8;                                       %  
 MX106_Kl = 1024 / MX106_stall_torque;                 %

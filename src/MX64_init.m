@@ -5,8 +5,8 @@ MX64_default = struct( ...
     'D_gain',uint8(0), ...
     'I_gain',uint8(0), ...
     'P_gain',uint8(32), ...
-    'goal_position',int16(2048), ...
-    'moving_speed',int16(0), ...
+    'goal_position',int16(2047), ...
+    'moving_speed',int16(1023), ...
     'torque_limit',int16(1023), ...
     'present_position',int16(0), ...
     'present_speed',int16(0), ...
@@ -90,15 +90,15 @@ clear i
 
 % Set motor parameters according to Robotis documentation
 % (http://emanual.robotis.com/docs/en/dxl/mx/mx-64/)
-MX64_reduction = 200.0;                             % 
-MX64_max_speed = 78 * MX64_reduction / 60 * 2 * pi; % rad/s
+MX64_reduction = 200;                               % 
+MX64_max_speed = 63 * MX64_reduction / 60 * 2 * pi; % rad/s (215) % 63
 MX64_stall_torque = 6.0 / MX64_reduction;           % Nm
 MX64_stall_current = 5.2;                           % A
 MX64_supply_voltage = 14.8;                         % V
 MX64_position_gain = 4096 / 2 / pi;                 % rad (norm from 0 ... 4095)
 MX64_speed_gain = 1024 / 8;                         % position difference (norm from -1023 ... 1023)
-MX64_resistor = 500;                                % Ohm
-MX64_inductor = 6.37e-3;                            % H
+MX64_resistor = 330;                                 % Ohm
+MX64_inductor = 6.37e-6;                            % H
 MX64_Kv = 9.926e-3;                                 % Vrad/s
 MX64_Kc = 8e-1;                                     % Nm/A [from measurements by T. Baroche]
 MX64_inertia = 9e-8 * MX64_reduction^2;             % kgm² from measurements
@@ -108,10 +108,10 @@ MX64_Kp = 1/8;                                      %
 MX64_Ki = 1/1024;                                   % 
 MX64_Kd = 1/8;                                      % 
 MX64_Kl = 1024 / MX64_stall_torque;                 %
-% MX64_lub_friction = 0.05;                         % Nms/rad
-MX64_lub_friction = 8.49e-4;                        % Nms/rad
-% MX64_dry_friction = 0;                            % Nm
-MX64_dry_friction = 1.07;                           % Nm
+MX64_lub_friction = 0.05;                           % Nms/rad
+% MX64_lub_friction = 8.49e-4;                      % Nms/rad
+MX64_dry_friction = 0;                              % Nm
+% MX64_dry_friction = 1.07;                         % Nm
 MX64_init_position = 0;                             % rad
 MX64_position_offset = pi;                          % rad (motor offset for zeroing)
 MX64_init_speed = 0;                                % rad/s
