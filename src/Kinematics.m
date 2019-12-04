@@ -7,6 +7,184 @@ classdef Kinematics
         function obj = Kinematics(m)
            obj.model = m; 
         end
+        %% 
+        function isSupported = supported(model, HtRAr, HtLAr, Htw, com)
+            % Get points of "contact" for each foot
+            pl = getSupport(model, HtLAr, Htw);
+            pr = getSupport(model, HtRAr, Htw);
+
+            fprintf(1, "%d\n", size(pl,2));
+
+            isSupported = 0;
+        %     
+        %     % Combine left and right support points
+        %     p = [pl pr];
+        %     
+        %     % Only get the points which lie on the convex hull
+        %     p = convexhull(p);
+        %     
+        %     % Determine if centre of mass lies in convex hull
+        %     isSupported = inConvexHull(com', p);
+        end
+
+        %% Get support points based on transform from torso to ankle roll
+        function p = getSupport(model, HtAr, Htw)
+            % Calculate transforms for each foot
+            Htf = Transform3D();
+            Htf.tf = HtAr;
+            Htf = Htf.translateY(model.leg.FOOT_CENTRE_TO_ANKLE_CENTRE);
+            % Offset from the centre of the foot in foot space
+            r = [model.leg.foot.LENGTH / 2; model.leg.foot.WIDTH / 2; 0; 1];
+
+            % Calculate transform to each corner of the foot in torso space
+            Htf_fl = Htf.translate(r .* [ 1;  1; 0; 1]);
+            Htf_fr = Htf.translate(r .* [ 1; -1; 0; 1]);
+            Htf_bl = Htf.translate(r .* [-1;  1; 0; 1]);
+            Htf_br = Htf.translate(r .* [-1; -1; 0; 1]);
+
+            % Calculate transforms to each corner of the foot in world space
+            Hwf_fl = Transform3D(Htw * Htf_fl.tf);
+            Hwf_fr = Transform3D(Htw * Htf_fr.tf);
+            Hwf_bl = Transform3D(Htw * Htf_bl.tf);
+            Hwf_br = Transform3D(Htw * Htf_br.tf);
+
+            % Make array of all points for the corners of the feet
+            p = [Hwf_fl.tf(1:3,4) Hwf_fr.tf(1:3,4) Hwf_bl.tf(1:3,4) Hwf_br.tf(1:3,4)];
+
+            % Iterate through all of the points and find points which are "close
+            % enough" to the ground
+            ii = 1;
+            while ii <= size(p,2)
+                if p(3,ii) > 0.05
+                    % If the point is above the ground, remove it from the list
+                    p(:,ii) = [];
+                else
+                    % Otherwise, go to the next point
+                    ii = ii+1;
+                end
+            end
+        end
+
+        %% Point in Polygon Algorithm Implementation
+        % Based on implementation by
+        % (https://www.geeksforgeeks.org/how-to-check-if-a-given-point-lies-inside-a-polygon/)
+        function isInside = inConvexHull(com, p)
+            % Compute convex hull of points
+            p = convexhull(p);
+            % Get min, max x and y coords
+            mm = minmax(p);
+            % Compute max point for com test
+            com_max = [mm(1,2), com(2)];
+
+            % Count number of intersections, where if the point is inside, there
+            % will be an odd number of intersections
+            c = 0;
+            for ii=1:size(p,2)
+                p1 = p(:,ii);
+                p2 = p(:,mod(ii, size(p,2))+1);
+
+                if getIntersection(p1, p2, com, com_max) == 1
+                    if getOrientation(p1, com, p2) == 0
+                        isInside = getSegment(p1, com, p2);
+                        return
+                    end
+                    c = c + 1;
+                end
+            end
+
+            isInside = mod(c, 2) == 1;
+        end
+
+        function intersects = getIntersection(p1, q1, p2, q2)
+            o1 = getOrientation(p1, q1, p2);
+            o2 = getOrientation(p1, q1, q2);
+            o3 = getOrientation(p2, q2, p1);
+            o4 = getOrientation(p2, q2, q1);
+
+            if o1 ~= o2 && o3 ~= o4
+                intersects = 1;
+                return
+            end
+
+            if (o1 == 0 && getSegment(p1, p2, q1)) || (o2 == 0 && getSegment(p1, q2, q1)) || (o3 == 0 && getSegment(p2, p1, q2)) || (o4 == 0 && getSegment(p2, q1, q2))
+                intersects = 1;
+                return
+            end
+            intersects = 0;
+        end
+
+        function onSegment = getSegment(p, q, r)
+            if q(1) <= max([p(1) r(1)]) && q(1) >= min([p(1) r(1)]) && q(2) <= max([p(2) r(2)]) && q(2) >= min([p(2) r(2)])
+                onSegment = 1;
+                return
+            end
+            onSegment = 0;
+        end
+
+
+        function o = getOrientation(p, q, r)
+            o = (q(2) - p(2)) * (r(1) - q(1)) - (q(1) - p(1)) * (r(2) - q(2));
+            if o > 0
+                o = 1;
+            else
+                o = 2;
+            end
+        end
+
+        %% Leftwards Convex Hull Algorithm
+        function ps = convexhull(p)
+        % CONVEXHULL Creates convex hull about two-dimensional input points p
+        %   ps = CONVEXHULL(p) returns the points from p which lie along the convex
+        %   hull
+
+            % Find leftmost point
+            [~, I] = min(p(1,:));
+            p_i    = p(1:2,I);
+            % Initialise unit vector to be pointing leftwards 
+            v_i    = [-1;0];
+            ps     = [;];
+            ang    = NaN(1,size(p,2));
+
+            % Iterate through until we have seen all of the points
+            while(~checkcols(p_i, ps))
+                ps = [ps p_i];
+                for ii=1:size(p,2)
+                    if p(1,ii) ~= p_i(1) || p(2,ii) ~= p_i(2)
+                        % If we are not comparing the current point to itself
+                        % Calculate angle between previous vector and new vector
+                        v = p(1:2,ii) - p_i;
+                        v = v ./ sqrt(v(1) ^ 2 + v(2) ^ 2);
+                        ang(ii) = acos(v' * v_i);
+                    else
+                        % If we are comparing the current point to itself, discard
+                        ang(ii) = NaN;
+                    end
+                end
+
+                % Update current point and vector
+                [~, I] = min(ang);
+                p_f = p(1:2,I);
+                v_i = p_f - p_i;
+                v_i = v_i ./ sqrt(v_i(1) ^ 2 + v_i(2) ^ 2);
+
+                p_i = p_f;
+            end
+        end
+
+        function b = checkcols(v,a)
+        % CHECKCOLS Checks each column of matrix a to determine if any match the
+        % input column vector v
+        %   b = CHECKCOLS(v,a) returns 1 if the column v is within the matrix a, 0
+        %   otherwise
+            b = 0;
+            for ii=1:size(a,2)
+                if a(:,ii) == v
+                    b = 1;
+                    return
+                end
+            end
+        end
+
         %% Helper function for ternary operations
         function result = ternary(~, c, t, f)
             if (c)
@@ -195,7 +373,10 @@ classdef Kinematics
             HTt.tf(1:3, 4) = p(1:3);
             % If left limb, invert x translation
             if ~isLeft
-                HTt.tf(1, 4) = HTt.tf(1,4) * -1;
+                %TODO: Test these two lines
+                HTt.tf(1:3, 1:3) = [-1 0 0; 0 1 0; 0 0 1] *  HTt.tf(1:3, 1:3);
+                HTt.tf(1:3, 1) = -HTt.tf(1:3, 1);
+                HTt.tf(1,4) = -HTt.tf(1,4);
             end
             
             ankleX = HTt.tf(1:3, 1);
