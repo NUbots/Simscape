@@ -32,8 +32,26 @@ close all;
 
 % Htw.data(:,:,end)
 % return
-figure()
-for ii=1:size(Htw.data, 3)
+f = figure();
+
+floor_length = 0.75;
+floor_width = 0.75;
+
+ax1 = subplot(2,2,1);
+ax2 = subplot(2,2,2);
+ax3 = subplot(2,2,3);
+ax4 = subplot(2,2,4);
+
+ax = [ax1, ax2, ax3, ax4];
+
+v = [1,0,0;0,1,0;0,0,1;1,1,1];
+titles = ["Front", "Left", "Top", "Orthographic"];
+
+% linkprop([ax1,ax2,ax3,ax4],{'xlabel', 'ylabel', 'zlabel', 'grid'}); 
+% linkprop([ax1,ax2],{'xlabel'});
+% linkprop([ax2,ax3],{'title'});
+
+for ii=1:size(Htw.data, 3)        
     %% Get centre of mass in world space
     H = Htw.data(:,:,ii);
 
@@ -51,71 +69,98 @@ for ii=1:size(Htw.data, 3)
     com_ii = Hwc(1:3, 4);
     
     %% Plot
-    grid()
     % Scatter joints
     n = 4:4:4*20;
-    scatter3([H(1,4), fk(1, n)],[H(2,4), fk(2, n)],[H(3,4), fk(3, n)]);
-    hold on
+    r_s = scatter3([H(1,4), fk(1, n)],[H(2,4), fk(2, n)],[H(3,4), fk(3, n)]);
     % Plot links
+    hold on
     % Head
     n = 4*19:4:4*20;
-    plot3([H(1,4), fk(1, n)],[H(2,4), fk(2, n)],[H(3,4), fk(3, n)])
+    r_hp = plot3([H(1,4), fk(1, n)],[H(2,4), fk(2, n)],[H(3,4), fk(3, n)]);
     % R Arm
     n = 4*2:4*2:4*6;
-    plot3([H(1,4), fk(1, n)],[H(2,4), fk(2, n)],[H(3,4), fk(3, n)])
+    r_rap = plot3([H(1,4), fk(1, n)],[H(2,4), fk(2, n)],[H(3,4), fk(3, n)]);
     % L Arm
     n = 4*1:4*2:4*5;
-    plot3([H(1,4), fk(1, n)],[H(2,4), fk(2, n)],[H(3,4), fk(3, n)])
+    r_lap = plot3([H(1,4), fk(1, n)],[H(2,4), fk(2, n)],[H(3,4), fk(3, n)]);
     % R Leg
     n = 4*7:4*2:4*17;
-    plot3([H(1,4), fk(1, n)],[H(2,4), fk(2, n)],[H(3,4), fk(3, n)])
+    r_rlp = plot3([H(1,4), fk(1, n)],[H(2,4), fk(2, n)],[H(3,4), fk(3, n)]);
     % L Leg
     n = 4*8:4*2:4*18;
-    plot3([H(1,4), fk(1, n)],[H(2,4), fk(2, n)],[H(3,4), fk(3, n)])
+    r_llp = plot3([H(1,4), fk(1, n)],[H(2,4), fk(2, n)],[H(3,4), fk(3, n)]);
     
     % Plot ZMP
     zmp_colour = 'red';
-    scatter3(zmp.data(ii,1), zmp.data(ii,2), 0, 'MarkerEdgeColor', zmp_colour)
-    plot3(zmp.data(1:ii,1),zmp.data(1:ii,2),zeros(ii,1), 'color', zmp_colour);
-    text(zmp.data(ii,1), zmp.data(ii,2), 0.01, '5ZMP', 'color', zmp_colour);
+    z = [zmp.data(ii,:) 0 1]';
+    z_s = scatter3(z(1), z(2), 0, 'MarkerEdgeColor', zmp_colour);
+    z_p = plot3(zmp.data(1:ii,1),zmp.data(1:ii,2),zeros(ii,1), 'color', zmp_colour);
+    z_t = text(z(1), z(2), 0.01, 'ZMP', 'color', zmp_colour);
     
     % Plot COM and its projection
     com_colour = [0 0.5 0.5];
-    scatter3(com_ii(1), com_ii(2), com_ii(3), 'x', 'MarkerEdgeColor', com_colour);
-    scatter3(com_ii(1), com_ii(2), 0, 'x', 'MarkerEdgeColor', com_colour);
-    plot3([com_ii(1), com_ii(1)], [com_ii(2), com_ii(2)], [com_ii(3), 0], '--', 'color', com_colour);
-    text(com_ii(1), com_ii(2), com_ii(3), 'CoM', 'color', com_colour);
+    com_s = scatter3(com_ii(1), com_ii(2), com_ii(3), 'x', 'MarkerEdgeColor', com_colour);
+    comp_s = scatter3(com_ii(1), com_ii(2), 0, 'x', 'MarkerEdgeColor', com_colour);
+    com_p = plot3([com_ii(1), com_ii(1)], [com_ii(2), com_ii(2)], [com_ii(3), 0], '--', 'color', com_colour);
+    com_t = text(com_ii(1), com_ii(2), com_ii(3), 'CoM', 'color', com_colour);
     
     % Plot projection of capture step position
     cs_colour = 'magenta';
-    cs_ii = [capture_step.data(ii,1:3) 1];
-    scatter3(cs_ii(1), cs_ii(2), 0, 'MarkerEdgeColor', cs_colour);
-    plot3(capture_step.data(1:ii,1), capture_step.data(1:ii,2), zeros(ii,1), '--', 'color', cs_colour)
-    text(cs_ii(1), cs_ii(2), 0.01, 'Capture Point', 'color', cs_colour);
-    
+    cs_ii = [capture_step.data(ii,1:3) 1]';
+    cs_s = scatter3(cs_ii(1), cs_ii(2), 0, 'MarkerEdgeColor', cs_colour);
+    cs_p = plot3(capture_step.data(1:ii,1), capture_step.data(1:ii,2), zeros(ii,1), '--', 'color', cs_colour);
+    cs_t = text(cs_ii(1), cs_ii(2), 0.01, 'CP', 'color', cs_colour);
+        
     % Plot support polygon
     
 %     H * FK.HtRAr.data(:,:,ii), H * FK.HtLAr.data(:,:,ii)
     
     % Plot ground surface
-    Xp = [floor.length/2, floor.length/2, -floor.length/2, -floor.length/2];
-    Yp = [floor.width/2, -floor.width/2, -floor.width/2, floor.width/2];
+%     Xp = [floor.length/2, floor.length/2, -floor.length/2, -floor.length/2];
+%     Yp = [floor.width/2, -floor.width/2, -floor.width/2, floor.width/2];
+    Xp = [floor_length/2, floor_length/2, -floor_length/2, -floor_length/2];
+    Yp = [floor_width/2, -floor_width/2, -floor_width/2, floor_width/2];
     Zp = [0, 0, 0, 0];
-    fill3(Xp, Yp, Zp, [0.9, 0.9, 0.9]);
+    f_f = fill3(Xp, Yp, Zp, [0.9, 0.9, 0.9]);
     
     % Set plot parameters
-    set(gca, 'DataAspectRatio', [1 1 1]);
+    
 %     xlim([-0.5 0.5])
 %     ylim([-0.5 0.5])
 %     zlim([-inf 0.8])
-    xlabel('x (m)')
-    ylabel('y (m)')
-    zlabel('z (m)')
-    title('Simulation Plot')
-    view([0.5 0 0.1])
-%     view([0.48 0.5 0.1])
     hold off
-
+    
+    cla(ax1)
+    cla(ax2)
+    cla(ax3)
+    
+    for jj=1:length(ax)
+        view(ax(jj),v(jj,:));
+        
+        set(ax(jj), 'DataAspectRatio', [1 1 1]);
+        
+        title(ax(jj), titles(jj));
+        xlabel(ax(jj), 'x (m)');
+        ylabel(ax(jj), 'y (m)');
+        zlabel(ax(jj), 'z (m)');
+        grid(ax(jj), 'on');
+        
+        copyobj([r_s, r_hp, r_rap, r_lap, r_rlp, r_llp, z_s, z_p, z_t, com_s, comp_s, com_p, com_t, cs_s, cs_p, cs_t, f_f], ax(jj));
+    end
+%     copyobj([r_s, r_hp, r_rap, r_lap, r_rlp, r_llp, z_s, z_p, z_t, com_s, comp_s, com_p, com_t, cs_s, cs_p, cs_t, f_f], ax2);
+    
+%     hFigIAxes = findobj('Parent', f, 'Type', 'axes');
+%     for jj=2:length(hFigIAxes)
+%         hAxes = hFigIAxes(jj);
+%         view(hAxes, v(jj,:));
+%         set(hAxes, 'DataAspectRatio', [1 1 1]);
+%         copyobj([r_s, r_hp, r_rap, r_lap, r_rlp, r_llp, z_s, z_p, z_t, com_s, comp_s, com_p, com_t, cs_s, cs_p, cs_t, f_f], hAxes);
+%         xlabel(hAxes, 'x (m)');
+%         ylabel(hAxes, 'y (m)');
+%         zlabel(hAxes, 'z (m)');
+%         grid(hAxes);
+%     end
+    
     % saveas(gcf,sprintf('f%d.png', time))
     pause(0.001)
 end
