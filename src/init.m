@@ -5,7 +5,7 @@ inertia_opacity = 0; % Determines how visible inertia indicators will be
 
 %% Sample time
 sample_time = 1/90;
-g = 9.8107;
+g = 0;%9.8107;
 
 Ts = 1e-3;
 sim_time = 6; % s Amount of time simulation runs for (maximum)
@@ -15,10 +15,12 @@ floor.length = 2;       % m (x)
 floor.width = 2;        % m (y)
 floor.depth = 0.02;     % m (z) 
 floor.vel_gain = 1e-9;  
+floor.pos_gain = floor.vel_gain;
 floor.contact_stiffness = 1e3;
 floor.contact_damping = 1e3;
 floor.kinetic_friction = 0.9;
 floor.static_friction = 0.95;
+floor.friction = floor.static_friction;
 floor.stud_radius = 1e-3;
 
 %% Torso parameters
