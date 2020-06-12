@@ -20,7 +20,7 @@ static bool timeTest(const google::protobuf::Timestamp &time1, const google::pro
     }
     else if(time1.seconds() == time2.seconds() && time1.nanos() > time2.nanos())
     {
-        return true;	
+        return true;
     }
     else
     {
@@ -123,7 +123,7 @@ void mdlStart(SimStruct *S)
         google::protobuf::Timestamp *epoch = new google::protobuf::Timestamp(google::protobuf::util::TimeUtil::GetCurrentTime());
         targetArray[i].set_allocated_time(epoch);
         targetArray[i].set_id(i);
-        targetArray[i].set_position(5);
+        targetArray[i].set_position(0);
         targetArray[i].set_gain(0);
         targetArray[i].set_torque(0);
     }

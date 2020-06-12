@@ -1,11 +1,10 @@
-#define S_FUNCTION_NAME  SfunProtobufEncode
+#define S_FUNCTION_NAME  SfunProtobufServosEncode
 #define S_FUNCTION_LEVEL 2
 #include "simstruc.h"
 
 #include "DarwinSensors.pb.h"
 #include "DarwinSensorsBus.h"
 #include "DarwinSensorsBusMethods.h"
-#include <google/protobuf/util/time_util.h>
 #include <string>
 
 /*
@@ -23,7 +22,7 @@ static void mdlInitializeSizes(SimStruct *S)
     
     //Set custom data type
     int dType;
-    char const* name = "DarwinSensorsBus";
+    char const* name = "ServosBus";
     ssRegisterTypeFromNamedObject(S, name, &dType);
 
     //In Ports
@@ -49,7 +48,7 @@ static void mdlInitializeSizes(SimStruct *S)
     {
         return;
     }
-    //Set the width of the output vector to 2048
+    //Set the width of the output vector to 8192
     ssSetOutputPortWidth(S, 0, 2048);
     //Set the data type of the output to unsigned int 8
     ssSetOutputPortDataType(S, 0, SS_UINT8);
@@ -78,13 +77,10 @@ static void mdlOutputs(SimStruct *S, int_T tid)
     InputPtrsType inputs = ssGetInputPortSignalPtrs(S,0);
     
     //Cast input to the struct
-    DarwinSensorsBus inBus = ((DarwinSensorsBus **)inputs)[0][0];
+    ServosBus inBus = ((ServosBus **)inputs)[0][0];
     
     //Copy over the stuff
-    message::platform::darwin::DarwinSensors protobufobj = darwinSensorsBusCopy(inBus);
-    
-    //Overwrite the timestamp
-    protobufobj.set_allocated_timestamp(new google::protobuf::Timestamp(google::protobuf::util::TimeUtil::GetCurrentTime()));
+    message::platform::darwin::DarwinSensors::Servos protobufobj = servosBusCopy(inBus);
     
     //Make a string object to point at the serialized binary protobuf message
     std::string buffer = std::string();

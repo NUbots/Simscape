@@ -10,3 +10,4 @@ python3 ../src/busGen.py
 
 mex -g -I/usr/local/include -I../build -L/usr/local/lib/ -lprotobuf ../src/SfunProtobufEncode.cpp DarwinSensors.pb.cc DarwinSensorsBusMethods.cpp timestampBusMethods.cpp
 mex -g -I/usr/local/include -I../build -L/usr/local/lib/ -lprotobuf ../src/SfunProtobufDecode.cpp ServoTarget.pb.cc ServoTargetBusMethods.cpp timestampBusMethods.cpp
+mex -g -I/usr/local/include -I../build -L/usr/local/lib/ -lprotobuf ../src/SfunProtobufServosEncode.cpp DarwinSensors.pb.cc DarwinSensorsBusMethods.cpp timestampBusMethods.cpp
