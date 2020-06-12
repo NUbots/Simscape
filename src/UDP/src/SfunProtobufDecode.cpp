@@ -42,6 +42,11 @@ static void mdlInitializeSizes(SimStruct *S)
         return; //Parameter mismatch reported by the Simulink engine
     }
 
+    //Set custom data type
+    int dType;
+    char const* name = "ServoTargetsBus";
+    ssRegisterTypeFromNamedObject(S, name, &dType);
+
     //Set the number of input ports to 1 and check that this was done successfully
     if (!ssSetNumInputPorts(S, 1)) 
     {
@@ -63,8 +68,14 @@ static void mdlInitializeSizes(SimStruct *S)
     {
         return;
     }
-    //Set the width of the output port to be equal 20
-    ssSetOutputPortWidth(S, 0, 20);
+    //Set the width of the output port to be equal 1
+    ssSetOutputPortWidth(S, 0, 1);
+
+    //Set the output to be the bus
+    ssSetOutputPortDataType(S, 0, dType);
+    
+    //Tell simulink that the output is a nonvirtual bus
+    ssSetBusOutputAsStruct(S, 0 , true);
     
     //We are only using 1 sample time
     ssSetNumSampleTimes(S, 1);
@@ -91,8 +102,7 @@ static void mdlInitializeSampleTimes(SimStruct *S)
 #define MDL_SET_INPUT_PORT_DIMENSION_INFO
 void mdlSetInputPortDimensionInfo(SimStruct *S, int_T port, const DimsInfo_T *dimsInfo)
 {
-    // Set to the suggested width (e.g. the output width
-    // from the connected block)
+    // Set to the suggested width
     ssSetInputPortDimensionInfo(S, port, dimsInfo);
 }
 
@@ -112,24 +122,25 @@ void mdlSetOutputPortDimensionInfo(SimStruct *S, int_T port,const DimsInfo_T *di
 void mdlStart(SimStruct *S)
 {
     //Create a array to store the values of the servos
-    message::motion::ServoTarget *targetArray = new message::motion::ServoTarget[ssGetOutputPortWidth(S,0)];
+    message::motion::ServoTargets *targets = new message::motion::ServoTargets();
     
-    for(int i = 0; i < ssGetOutputPortWidth(S,0); i++)
+    for(int i = 0; i < 20; i++)
     {
         //Initialise each element in the array
         //Create a TimeStamp object on the heap the give it to the protobuf object
         //who will now have ownership of it and will deallocate it for me
         //The assignment operator of ServoTargets does deallocate
+        message::motion::ServoTarget* target = targets->add_targets();
         google::protobuf::Timestamp *epoch = new google::protobuf::Timestamp(google::protobuf::util::TimeUtil::GetCurrentTime());
-        targetArray[i].set_allocated_time(epoch);
-        targetArray[i].set_id(i);
-        targetArray[i].set_position(0);
-        targetArray[i].set_gain(0);
-        targetArray[i].set_torque(0);
+        target->set_allocated_time(epoch);
+        target->set_id(i);
+        target->set_position(0);
+        target->set_gain(0);
+        target->set_torque(0);
     }
     
     //Set the value of the 0th work pointer to the pointer to the array of ServoTarget
-    ssSetPWorkValue(S, 0, targetArray);
+    ssSetPWorkValue(S, 0, targets);
 }
 
 /*
@@ -139,7 +150,7 @@ void mdlStart(SimStruct *S)
 static void mdlOutputs(SimStruct *S, int_T tid)
 {
     //Get a pointer to the work vector
-    message::motion::ServoTarget *targetArray = (message::motion::ServoTarget *)ssGetPWorkValue(S, 0);
+    message::motion::ServoTargets *targets = (message::motion::ServoTargets *)ssGetPWorkValue(S, 0);
 
     //Get a pointer to the input vector
     uint8_T * input = (uint8_T *)ssGetInputPortSignal(S, 0);
@@ -160,18 +171,20 @@ static void mdlOutputs(SimStruct *S, int_T tid)
            timeTest(inMessage.targets(i).time(),targetArray[inMessage.targets(i).id()].time())*/)
         {
             //Copy the new ServoTarget into the array
-            targetArray[inMessage.targets(i).id()] = inMessage.targets(i);
+            *(targets->mutable_targets(inMessage.targets(i).id())) = inMessage.targets(i);
         }
     }
     
     //Get a pointer to the output array
-    real_T *output = ssGetOutputPortRealSignal(S,0);
+    ServoTargetsBus *output = (ServoTargetsBus *)ssGetOutputPortSignal(S,0);
     
+    output[0] = servoTargetsBusCopy(*targets);
+
     //Output all the positions
-    for(int i = 0; i < ssGetOutputPortWidth(S,0); i++)
-    {
-        output[i] = targetArray[i].position();
-    }
+    //for(int i = 0; i < ssGetOutputPortWidth(S,0); i++)
+    //{
+    //    output[i] = targetArray[i].position();
+    //}
     
     UNUSED_ARG(tid);
 }
@@ -181,7 +194,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
  */
 static void mdlTerminate(SimStruct *S)
 {
-    delete[] (message::motion::ServoTarget *)ssGetPWorkValue(S, 0);
+    delete (message::motion::ServoTargets *)ssGetPWorkValue(S, 0);
 }
 
 #ifdef MATLAB_MEX_FILE    /* Is this file being compiled as a 
