@@ -1,5 +1,7 @@
 clear all
 
+run UDP/loadSimscapeUDP
+
 %% Visual parameters
 inertia_opacity = 0; % Determines how visible inertia indicators will be
 

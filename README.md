@@ -9,6 +9,15 @@ Physics simulation using Simulink's [Simscape Multibody](https://www.mathworks.c
 2. [Simulink](https://mathworks.com/products/simulink.html)
 3. [Simscape](https://mathworks.com/products/simscape.html) 
 4. [Simscape Multibody](https://mathworks.com/products/simmechanics.html)
+5. [C++ Protobuf](https://github.com/protocolbuffers/protobuf/tree/master/src)
+
+## Building UDP
+```
+cd src/UDP
+mkdir build
+cd build
+../src/buildSimscapeUDP.sh
+```
 
 ## Running Simulations
 Ensure that the `src` folder and all subfolders are in MATLAB's search path and all relevant dependencies are installed.
