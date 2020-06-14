@@ -44,8 +44,7 @@ static void mdlInitializeSizes(SimStruct *S)
 
     //Set custom data type
     int dType;
-    char const* name = "ServoTargetsBus";
-    ssRegisterTypeFromNamedObject(S, name, &dType);
+    ssRegisterTypeFromNamedObject(S, "ServoTargetsBus", &dType);
 
     //Set the number of input ports to 1 and check that this was done successfully
     if (!ssSetNumInputPorts(S, 1)) 
@@ -73,6 +72,7 @@ static void mdlInitializeSizes(SimStruct *S)
 
     //Set the output to be the bus
     ssSetOutputPortDataType(S, 0, dType);
+    ssSetBusOutputObjectName(S, 0, (void *) "ServoTargetsBus");
     
     //Tell simulink that the output is a nonvirtual bus
     ssSetBusOutputAsStruct(S, 0 , true);
